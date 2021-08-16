@@ -82,6 +82,13 @@ ARTIFACT_ID=testlib
 apply from:"$rootDir/gradle-maven-push.gradle"
 ```
 
+或者远程依赖
+
+```groovy
+...
+apply from: 'https://github.com/lairdli/AndroidMavenUpload/releases/download/v0.0.1/gradle-maven-push.gradle'
+```
+
 ### 步骤5
 
 执行上传task上传aar

@@ -43,6 +43,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
 
-apply from:"$rootDir/gradle-maven-push.gradle"
-//apply from:"${rootProject.projectDir}/gradle-mvn-push.gradle"
-//apply from: 'https://raw.github.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+//apply from:"$rootDir/gradle-maven-push.gradle"
+apply from: 'https://github.com/lairdli/AndroidMavenUpload/releases/download/v0.0.1/gradle-maven-push.gradle'
