@@ -1,0 +1,97 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+
+def configurePom(pom) {
+    pom.name = POM_NAME
+    pom.packaging = POM_PACKAGING
+    pom.description = POM_DESCRIPTION
+    pom.url = POM_URL
+
+    pom.scm {
+        url = POM_SCM_URL
+        connection = POM_SCM_CONNECTION
+        developerConnection = POM_SCM_DEV_CONNECTION
+    }
+
+    pom.licenses {
+        license {
+            name = POM_LICENCE_NAME
+            url = POM_LICENCE_URL
+            distribution = POM_LICENCE_DIST
+        }
+    }
+
+    pom.developers {
+        developer {
+            id = POM_DEVELOPER_ID
+            name = POM_DEVELOPER_NAME
+        }
+    }
+
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.source
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    excludes = ['**/*.kt']
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.source
+}
+afterEvaluate {
+    println "***************************************************** "
+    publishing {
+        publications {
+            release(MavenPublication) {
+                // The coordinates of the library, being set from variables that
+                // we'll set up in a moment
+                groupId GROUP
+                artifactId ARTIFACT_ID
+                version VERSION_NAME
+
+                println "**groupId :$groupId"
+                println "**artifactId :$artifactId"
+                println "**version :$version"
+
+                // Two artifacts, the `aar` and the sources
+                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+                artifact androidSourcesJar
+                artifact androidJavadocsJar
+
+                configurePom(pom)
+            }
+        }
+        repositories {
+            // The repository to publish to, Sonatype/MavenCentral
+            maven {
+
+                def releasesRepoUrl = MAVEN_REPOSITORY_URL_RELEASE
+                def snapshotsRepoUrl = MAVEN_REPOSITORY_URL_SNAPSHOT
+                url = VERSION_NAME.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+                println "**maven url :$url"
+
+                credentials(PasswordCredentials) {
+                    username = MAVEN_NEXUS_USERNAME
+                    password = MAVEN_NEXUS_PASSWORD
+                    println "**maven username :$username"
+                    println "**maven password :$password"
+                }
+            }
+        }
+    }
+    if (NEED_SIGN.toBoolean()) {
+        signing {
+            sign publishing.publications
+            println "**sign $GROUP:$ARTIFACT_ID:$VERSION_NAME "
+        }
+    }
+    println "***************************************************** "
+}
